@@ -3,10 +3,13 @@
 #include <iostream>
 #include <algorithm>
 
+#include "time_measure.h"
 #include "cuda_runtime.h"
 
 static void bitonic_sort_GPU(int *in, int*out, const int n, const int m);
 static void bitonic_sort_CPU(int *in, int*out, const int n, const int m);
+
+time_measure::Timer timer;
 
 bool solve()
 {
@@ -18,11 +21,18 @@ bool solve()
     int *out_gpu = new int[n];
 
     for (int i = 0; i < n; i++) a[i] = rand() % 10000;
-
+    
+    timer.start();
     bitonic_sort_GPU(a, out_gpu, n, m);
-    bitonic_sort_CPU(a, out_cpu, n, m);
+    timer.stop();
 
+    // timer.start();
+    bitonic_sort_CPU(a, out_cpu, n, m);
+    // timer.stop();
+
+    // timer.start();
     std::sort(a, a + n);
+    // timer.stop();
 
     for(int i = 0; i < n; ++i){
         if(a[i] != out_cpu[i] || a[i] != out_gpu[i]){
@@ -78,7 +88,6 @@ static void bitonic_sort_CPU(int *hIn, int *a, const int n, const int m){
         for(int j = c; j >= 0; --j){
             for(int i = 0; i < (n >> 1); ++i){
                 int idx = i + ((i >> j) << j);
-                // printf("idx, idx + (1 << j) = %d, %d\n", idx, idx + (1 << j));
                 if (((i >> c) & 1) == 0 && a[idx] > a[idx + (1 << j)]){
                     std::swap(a[idx], a[idx + (1 << j)]);
                 }
@@ -92,7 +101,7 @@ static void bitonic_sort_CPU(int *hIn, int *a, const int n, const int m){
 }
 
 int main(){
-    int n = 1000;
+    int n = 100;
     int ng = 0;
     for(int i = 0; i < n; ++i){
         if(!solve())++ng;

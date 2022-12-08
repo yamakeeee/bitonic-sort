@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 2.8)
-project(MyCudaProject CXX)
-
 # For CUDA
 find_package(CUDA REQUIRED)
 if(CUDA_FOUND)
@@ -9,5 +6,4 @@ if(CUDA_FOUND)
         main.cu
     )
 endif()
-
 target_link_libraries(main time_measure)
