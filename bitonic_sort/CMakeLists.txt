@@ -1,11 +1,5 @@
-cmake_minimum_required(VERSION 2.8)
-project(MyCudaProject)
+cmake_minimum_required(VERSION 3.17.1)
+project(bitonic_sort CXX)
 
-# For CUDA
-find_package(CUDA REQUIRED)
-if(CUDA_FOUND)
-    message("Cuda version: " ${CUDA_VERSION})
-    CUDA_ADD_EXECUTABLE(main
-        main.cu
-    )
-endif()
+add_subdirectory(src)
+add_subdirectory(time_measure)
