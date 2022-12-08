@@ -16,7 +16,7 @@ void TimerInfo::init(){
 
 std::string TimerInfo::result(){
     std::string res = "count, sum, average = ";
-    res += std::to_string(count) + ", " + std::to_string(time) + ", "
+    res += std::to_string(count) + ", " + std::to_string(time) + " ms, "
         + std::to_string(time / count) + " ms";
     return res;
 }

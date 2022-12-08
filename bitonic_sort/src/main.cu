@@ -101,7 +101,7 @@ static void bitonic_sort_CPU(int *hIn, int *a, const int n, const int m){
 }
 
 int main(){
-    int n = 10000;
+    int n = 1000;
     int ng = 0;
     for(int i = 0; i < n; ++i){
         if(!solve())++ng;
