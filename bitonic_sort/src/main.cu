@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <algorithm>
+#include <thrust/sort.h>
 
 #include "time_measure.h"
 #include "cuda_runtime.h"
@@ -22,15 +23,23 @@ bool solve()
 
     for (int i = 0; i < n; i++) a[i] = rand() % 10000;
     
+    timer.start();
     bitonic_sort_GPU(a, out_gpu, n, m);
+    timer.stop("bitonic sort GPU");
+
+    timer.start();
+    int *b = new int[n];
+    for (int i = 0; i < n; ++i) b[i] = a[i];
+    thrust::sort(b, b + n);
+    timer.stop("thrust::sort");
 
     timer.start();
     bitonic_sort_CPU(a, out_cpu, n, m);
-    timer.stop("CPU");
+    timer.stop("bitonic sort CPU");
 
     timer.start();
     std::sort(a, a + n);
-    timer.stop("qsort");
+    timer.stop("std::sort");
 
     for(int i = 0; i < n; ++i){
         if(a[i] != out_cpu[i] || a[i] != out_gpu[i]){
@@ -69,7 +78,6 @@ static void bitonic_sort_GPU(int *hIn, int *hOut, const int n, const int m)
     int *dArray;
     cudaMallocHost((void**)&dArray, n * sizeof(int));
     cudaMemcpy(dArray, hIn, n * sizeof(int), cudaMemcpyHostToDevice);
-    timer.start();
     int blockSize = (n + 31) / 32;
     for(int c = 0; c < m; ++c){
         for(int j = c; j >= 0; --j){
@@ -77,7 +85,6 @@ static void bitonic_sort_GPU(int *hIn, int *hOut, const int n, const int m)
         }
     }
     cudaDeviceSynchronize();
-    timer.stop("GPU");
     cudaMemcpy(hOut, dArray, n * sizeof(int), cudaMemcpyDeviceToHost);
     cudaFree(dArray);
 }
