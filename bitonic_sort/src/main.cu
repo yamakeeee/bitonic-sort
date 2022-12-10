@@ -73,15 +73,38 @@ __global__ void kernel_bitonic_sort(int *a, const int n, const int c, const int 
     }
 }
 
+__global__ void kernel_bitonic_sort_asink(int *a, const int n, const int c, const int jj)
+{
+    int i = blockIdx.x * blockDim.x +threadIdx.x;
+    if (i < n / 2) {
+        for(int j = jj; j >= 0; --j){
+            int idx = i + ((i >> j) << j);
+            if (((i >> c) & 1) == 0 && a[idx] > a[idx + (1 << j)]){
+                int tmp = a[idx];
+                a[idx] = a[idx + (1 << j)];
+                a[idx + (1 << j)] = tmp;
+            }
+            else if(((i >> c) & 1) && a[idx] < a[idx + (1 << j)]){
+                int tmp = a[idx];
+                a[idx] = a[idx + (1 << j)];
+                a[idx + (1 << j)] = tmp;
+            }
+        }
+        __syncthreads();
+    }
+}
+
 static void bitonic_sort_GPU(int *hIn, int *hOut, const int n, const int m)
 {
     int *dArray;
     cudaMallocHost((void**)&dArray, n * sizeof(int));
     cudaMemcpy(dArray, hIn, n * sizeof(int), cudaMemcpyHostToDevice);
-    int blockSize = (n + 31) / 32;
+    int blockSize = 64;
+    int gridSize = (n + blockSize - 1) / blockSize;
     for(int c = 0; c < m; ++c){
         for(int j = c; j >= 0; --j){
-            kernel_bitonic_sort<<<32, blockSize>>>(dArray, n, c, j);
+            if((1<<(j+1)) <= blockSize)kernel_bitonic_sort_asink<<<gridSize, blockSize>>>(dArray, n, c, j);
+            else kernel_bitonic_sort<<<gridSize, blockSize>>>(dArray, n, c, j);
         }
     }
     cudaDeviceSynchronize();
