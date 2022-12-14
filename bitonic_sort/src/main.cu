@@ -103,7 +103,10 @@ static void bitonic_sort_GPU(int *hIn, int *hOut, const int n, const int m)
     int gridSize = (n + blockSize - 1) / blockSize;
     for(int c = 0; c < m; ++c){
         for(int j = c; j >= 0; --j){
-            if((1<<(j+1)) <= blockSize)kernel_bitonic_sort_asink<<<gridSize, blockSize>>>(dArray, n, c, j);
+            if((1<<(j+1)) <= blockSize){
+                kernel_bitonic_sort_asink<<<gridSize, blockSize>>>(dArray, n, c, j);
+                break;
+            }
             else kernel_bitonic_sort<<<gridSize, blockSize>>>(dArray, n, c, j);
         }
     }
